@@ -27,7 +27,7 @@ export const ExportApkModal: React.FC<ExportApkModalProps> = ({ isOpen, onClose 
   android-apk-build:
     name: Build ONO Android APK
     max_build_duration: 30
-    instance_type: linux_x2
+    instance_type: mac_mini_m2
     environment:
       node: 20
       java: 17
@@ -184,7 +184,7 @@ export const ExportApkModal: React.FC<ExportApkModalProps> = ({ isOpen, onClose 
             </p>
 
             <div className="bg-amber-950/40 border border-amber-500/40 p-3 rounded-xl text-xs text-amber-200">
-              💡 <strong>Buffering / Queue Fix:</strong> Agar Codemagic build start hone ke bajaye buffer kr raha ho, to humne instance type <code className="text-white font-mono">linux_x2</code> set kr diya hai (free account pe fast run hota he bina queue me ruke). Sath hi <code className="text-white font-mono">.github/workflows/build-apk.yml</code> bhi add kr di hai taake GitHub pe push hote hi automatically APK build ho jaye!
+              💡 <strong>Free Tier Instance Note:</strong> Codemagic ke Free Personal Account par sirf <code className="text-white font-mono">mac_mini_m2</code> allowed hota hai (500 free minutes). Agar koi aur instance select ho to "instance type is not available with current billing plan" error aata hai. Humne isko <code className="text-white font-mono">mac_mini_m2</code> par set kar diya hai. Sath hi agar aap bina kisi wait ke instant APK chahein, to repository me GitHub Actions (<code className="text-white font-mono">.github/workflows/build-apk.yml</code>) se direct 100% free APK download kar sakte hain!
             </div>
 
             <div className="relative">
