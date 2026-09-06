@@ -31,11 +31,8 @@ jobs:
       - name: Build Web App
         run: npm run build
 
-      - name: Setup Capacitor for Android
+      - name: Sync Web App to Android
         run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init "ONO Game" "com.onocardgame.app" --web-dir "dist"
-          npx cap add android
           npx cap sync android
 
       - name: Build Android Debug APK
