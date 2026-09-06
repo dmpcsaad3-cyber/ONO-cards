@@ -16,9 +16,9 @@ workflows:
       - name: Sync Web App to Android
         script: |
           if [ ! -d "android" ]; then
-            npx cap add android
+            npm run cap:add
           fi
-          npx cap sync android
+          npm run cap:sync
       - name: Build Android APK
         script: |
           cd android

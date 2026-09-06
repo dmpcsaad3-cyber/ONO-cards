@@ -1,6 +1,5 @@
 {
 	"appId": "com.onocardgame.app",
 	"appName": "ONO Game",
-	"webDir": "dist",
-	"bundledWebRuntime": false
+	"webDir": "dist"
 }
