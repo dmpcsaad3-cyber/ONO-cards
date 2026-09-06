@@ -27,14 +27,14 @@ export const ExportApkModal: React.FC<ExportApkModalProps> = ({ isOpen, onClose 
   android-apk-build:
     name: Build ONO Android APK
     max_build_duration: 30
-    instance_type: mac_mini_m2
+    instance_type: linux_x2
     environment:
-      node: latest
+      node: 20
       java: 17
     scripts:
       - name: Install dependencies
         script: |
-          npm ci || npm install
+          npm install
       - name: Build Web App
         script: |
           npm run build
@@ -44,19 +44,13 @@ export const ExportApkModal: React.FC<ExportApkModalProps> = ({ isOpen, onClose 
           npx cap init "ONO Game" "com.onocardgame.app" --web-dir "dist"
           npx cap add android
           npx cap sync android
-      - name: Build Android Release APK
+      - name: Build Android APK
         script: |
           cd android
-          ./gradlew assembleRelease || ./gradlew assembleDebug
+          chmod +x gradlew
+          ./gradlew assembleDebug
     artifacts:
       - android/app/build/outputs/apk/**/*.apk
-    publishing:
-      email:
-        recipients:
-          - your-email@example.com
-        notify:
-          success: true
-          failure: true
 `;
 
   const capacitorConfig = `{
@@ -188,6 +182,10 @@ export const ExportApkModal: React.FC<ExportApkModalProps> = ({ isOpen, onClose 
             <p className="text-xs text-slate-400">
               Codemagic root folder me <code className="text-amber-300">codemagic.yaml</code> file ko detect kr k auto APK build kar deta hai.
             </p>
+
+            <div className="bg-amber-950/40 border border-amber-500/40 p-3 rounded-xl text-xs text-amber-200">
+              💡 <strong>Buffering / Queue Fix:</strong> Agar Codemagic build start hone ke bajaye buffer kr raha ho, to humne instance type <code className="text-white font-mono">linux_x2</code> set kr diya hai (free account pe fast run hota he bina queue me ruke). Sath hi <code className="text-white font-mono">.github/workflows/build-apk.yml</code> bhi add kr di hai taake GitHub pe push hote hi automatically APK build ho jaye!
+            </div>
 
             <div className="relative">
               <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-[10px] sm:text-[11px] text-slate-300 max-h-48 overflow-y-auto">
