@@ -1,0 +1,27 @@
+workflows:
+  android-apk-build:
+    name: Build ONO Android APK
+    max_build_duration: 30
+    instance_type: mac_mini_m2
+    environment:
+      node: latest
+      java: 17
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+      - name: Build Web App
+        script: |
+          npm run build
+      - name: Setup Capacitor for Android
+        script: |
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npx cap init "ONO Game" "com.onocardgame.app" --web-dir "dist"
+          npx cap add android
+          npx cap sync android
+      - name: Build Android Release APK
+        script: |
+          cd android
+          ./gradlew assembleDebug || ./gradlew assembleRelease
+    artifacts:
+      - android/app/build/outputs/apk/**/*.apk

@@ -1,0 +1,6 @@
+{
+  "name": "ONO Card Game",
+  "description": "Full-featured ONO card game with official rules, Single Player vs AI, up to 4 Player Multiplayer, sound effects, customizable rules, and mobile APK / itch.io export guides.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

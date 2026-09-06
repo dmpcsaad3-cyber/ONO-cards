@@ -1,0 +1,18 @@
+{
+  "name": "ONO Card Game",
+  "short_name": "ONO",
+  "description": "Play ONO card game against smart AI bots or 2-4 player local/pass-and-play multiplayer with official rules.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
