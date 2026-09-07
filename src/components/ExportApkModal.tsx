@@ -8,6 +8,7 @@ import {
   Github,
   HelpCircle,
   Package,
+  PlayCircle,
   Smartphone,
   UploadCloud,
   X
@@ -53,6 +54,96 @@ export const ExportApkModal: React.FC<ExportApkModalProps> = ({ isOpen, onClose 
           ./gradlew assembleDebug --no-daemon
     artifacts:
       - android/app/build/outputs/apk/**/*.apk
+`;
+
+  const githubWorkflowYaml = `name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Publish as a GitHub Release (direct APK download link)'
+        required: false
+        type: boolean
+        default: false
+      release_tag:
+        description: 'Release Tag (e.g. v1.0.0)'
+        required: false
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Assemble Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Setup Java JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android Licenses & Ensure SDK 36
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-36" "build-tools;35.0.0" || true
+
+      - name: Configure Android local.properties
+        run: |
+          mkdir -p android
+          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Build Web App
+        run: npm run build
+
+      - name: Sync Web App to Android
+        run: |
+          if [ ! -d "android/app" ]; then
+            npm run cap:add
+          fi
+          npm run cap:sync
+
+      - name: Build Android Debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Rename APK for Easy Distribution
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/ONO-Card-Game-debug.apk
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ono-game-apk
+          path: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+            android/app/build/outputs/apk/debug/ONO-Card-Game-debug.apk
+          if-no-files-found: error
+          retention-days: 30
 `;
 
   const capacitorConfig = `{
@@ -187,23 +278,98 @@ export const ExportApkModal: React.FC<ExportApkModalProps> = ({ isOpen, onClose 
             </div>
           </div>
 
-          {/* STEP 2: Codemagic CI/CD */}
-          <div className="border border-slate-800 rounded-2xl p-4 bg-slate-950/40 space-y-3">
-            <div className="flex items-center justify-between">
+          {/* STEP 2: BUILD APK (GitHub Actions - Recommended) */}
+          <div className="border border-indigo-500/50 rounded-2xl p-4 bg-indigo-950/20 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">
+                <span className="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-xs">
                   2
                 </span>
                 <h4 className="font-bold text-white flex items-center gap-1.5">
+                  <PlayCircle className="w-4 h-4 text-emerald-400" />
+                  <span>GitHub Actions: 1-Click "Run workflow" (Recommended & Free)</span>
+                </h4>
+              </div>
+              <a
+                href="https://github.com/dmpcsaad3-cyber/ONO-cards/actions"
+                target="_blank"
+                rel="noreferrer"
+                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-900/30 transition-all cursor-pointer no-underline whitespace-nowrap"
+              >
+                <Github className="w-3.5 h-3.5" />
+                <span>Open Actions Tab</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+
+            <div className="bg-slate-950/70 p-3.5 rounded-xl border border-slate-800 text-xs space-y-2">
+              <p className="text-slate-200 font-semibold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                GitHub Actions me APK run karne ka direct tariqa:
+              </p>
+              <ol className="list-decimal list-inside space-y-1.5 text-slate-300 pl-1">
+                <li>
+                  Apne GitHub repo par jayein: <a href="https://github.com/dmpcsaad3-cyber/ONO-cards/actions" target="_blank" rel="noreferrer" className="text-indigo-400 underline font-mono">github.com/dmpcsaad3-cyber/ONO-cards/actions</a>
+                </li>
+                <li>
+                  Left sidebar me <strong>"Build Android APK"</strong> workflow par click karein.
+                </li>
+                <li>
+                  Right side par <strong className="text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700">Run workflow ▾</strong> button par click karein.
+                </li>
+                <li>
+                  Green button <strong className="text-emerald-400">"Run workflow"</strong> press karein. Workflow start ho kar ~2-3 minutes me finish ho jata hai!
+                </li>
+                <li>
+                  Completed run par click karein aur neechay <strong>Artifacts</strong> section me se <strong>ono-game-apk</strong> download karein!
+                </li>
+              </ol>
+            </div>
+
+            {/* Workflow File Details */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs text-slate-400">
+                <span>Workflow File: <code className="text-emerald-300">.github/workflows/build-apk.yml</code></span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => copyToClipboard(githubWorkflowYaml, 'gh-yaml')}
+                    className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1 cursor-pointer text-[11px]"
+                  >
+                    {copiedKey === 'gh-yaml' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                    <span>{copiedKey === 'gh-yaml' ? 'Copied' : 'Copy'}</span>
+                  </button>
+                  <button
+                    onClick={() => downloadFile(githubWorkflowYaml, 'build-apk.yml')}
+                    className="px-2 py-0.5 rounded bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1 cursor-pointer text-[11px]"
+                  >
+                    <Download className="w-3 h-3" />
+                    <span>Download</span>
+                  </button>
+                </div>
+              </div>
+              <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 font-mono text-[10px] sm:text-[11px] text-slate-300 max-h-36 overflow-y-auto">
+                <pre>{githubWorkflowYaml}</pre>
+              </div>
+            </div>
+          </div>
+
+          {/* ALTERNATIVE: Codemagic CI/CD */}
+          <div className="border border-slate-800 rounded-2xl p-4 bg-slate-950/40 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-slate-700 text-slate-300 font-bold flex items-center justify-center text-xs">
+                  Alt
+                </span>
+                <h4 className="font-bold text-slate-300 flex items-center gap-1.5">
                   <Code2 className="w-4 h-4 text-amber-400" />
-                  Codemagic me APK Generate Krna
+                  Codemagic CI/CD (Alternative)
                 </h4>
               </div>
 
               <div className="flex gap-2">
                 <button
                   onClick={() => downloadFile(codemagicYaml, 'codemagic.yaml')}
-                  className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1 cursor-pointer"
+                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs flex items-center gap-1 cursor-pointer border border-slate-700"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>Download codemagic.yaml</span>
@@ -212,35 +378,17 @@ export const ExportApkModal: React.FC<ExportApkModalProps> = ({ isOpen, onClose 
             </div>
 
             <p className="text-xs text-slate-400">
-              Codemagic root folder me <code className="text-amber-300">codemagic.yaml</code> file ko detect kr k auto APK build kar deta hai.
+              Codemagic me Apple Silicon <code className="text-amber-300">mac_mini_m2</code> par Rollup darwin-arm64 binary aur Java 21 update fix kar diya gaya hai.
             </p>
-
-            <div className="bg-amber-950/40 border border-amber-500/40 p-3 rounded-xl text-xs text-amber-200">
-              💡 <strong>Free Tier Instance Note:</strong> Codemagic ke Free Personal Account par sirf <code className="text-white font-mono">mac_mini_m2</code> allowed hota hai (500 free minutes). Agar koi aur instance select ho to "instance type is not available with current billing plan" error aata hai. Humne isko <code className="text-white font-mono">mac_mini_m2</code> par set kar diya hai. Sath hi agar aap bina kisi wait ke instant APK chahein, to repository me GitHub Actions (<code className="text-white font-mono">.github/workflows/build-apk.yml</code>) se direct 100% free APK download kar sakte hain!
-            </div>
-
-            <div className="relative">
-              <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-[10px] sm:text-[11px] text-slate-300 max-h-48 overflow-y-auto">
-                <pre>{codemagicYaml}</pre>
-              </div>
-              <button
-                onClick={() => copyToClipboard(codemagicYaml, 'yaml')}
-                className="absolute top-2 right-2 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700 flex items-center gap-1 cursor-pointer"
-              >
-                {copiedKey === 'yaml' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedKey === 'yaml' ? 'Copied' : 'Copy'}</span>
-              </button>
-            </div>
 
             <ol className="list-decimal list-inside space-y-1 text-xs text-slate-400 pl-1">
               <li>
                 <a href="https://codemagic.io" target="_blank" rel="noreferrer" className="text-indigo-400 underline inline-flex items-center gap-0.5">
                   codemagic.io <ExternalLink className="w-3 h-3" />
-                </a> pe GitHub se free sign in karein.
+                </a> pe login kr k apna <strong>ONO-cards</strong> repo select karein.
               </li>
-              <li>"Add Application" pe click kr k apna <strong>ono-card-game</strong> repo select karein.</li>
-              <li>Codemagic automatically is yaml ko read karega aur <strong>Start new build</strong> button dabate hi APK build start ho jaega!</li>
-              <li>Build complete hotay hi <strong>Artifacts</strong> section se direct <code>.apk</code> download kr lein!</li>
+              <li>Updated <code className="text-slate-300">codemagic.yaml</code> push hone ke baad <strong>Start new build</strong> dabayein.</li>
+              <li>Build complete hotay hi <strong>Artifacts</strong> se APK download kar lein!</li>
             </ol>
           </div>
 
