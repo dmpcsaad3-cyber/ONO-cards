@@ -57,22 +57,36 @@ jobs:
 
       - name: Sync Web App to Android
         run: |
-          if [ ! -f "android/build.gradle" ]; then
-            rm -rf android
-            npm run cap:add
+          # Purge any committed or stale Gradle locks and cache files that break Capacitor sync
+          rm -rf android/.gradle android/build android/app/build
+
+          # Sync or re-initialize Android platform
+          if [ -d "android/app" ]; then
+            echo "Syncing existing Android project..."
+            npx @capacitor/cli sync android || {
+              echo "Capacitor sync encountered an issue. Recreating fresh Android platform..."
+              rm -rf android
+              npx @capacitor/cli add android
+            }
           else
-            npm run cap:sync
+            echo "Creating fresh Android platform..."
+            rm -rf android
+            npx @capacitor/cli add android
           fi
+
+          # Ensure Android SDK path is properly defined
           if [ -n "$ANDROID_HOME" ]; then
             echo "sdk.dir=$ANDROID_HOME" > android/local.properties
           fi
+
+          # Ensure gradlew has executable permissions
           chmod +x android/gradlew
 
       - name: Build Android Debug APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Rename APK for Easy Distribution
         run: |

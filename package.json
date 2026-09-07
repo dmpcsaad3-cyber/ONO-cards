@@ -9,8 +9,8 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "cap:add": "npx --yes @capacitor/cli add android",
-    "cap:sync": "npx --yes @capacitor/cli sync android"
+    "cap:add": "cap add android",
+    "cap:sync": "cap sync android"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.1",
