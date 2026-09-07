@@ -107,11 +107,6 @@ jobs:
           yes | sdkmanager --licenses || true
           sdkmanager "platforms;android-36" "build-tools;35.0.0" || true
 
-      - name: Configure Android local.properties
-        run: |
-          mkdir -p android
-          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
-
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
@@ -120,10 +115,16 @@ jobs:
 
       - name: Sync Web App to Android
         run: |
-          if [ ! -d "android/app" ]; then
+          if [ ! -f "android/build.gradle" ]; then
+            rm -rf android
             npm run cap:add
+          else
+            npm run cap:sync
           fi
-          npm run cap:sync
+          if [ -n "$ANDROID_HOME" ]; then
+            echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+          fi
+          chmod +x android/gradlew
 
       - name: Build Android Debug APK
         run: |
