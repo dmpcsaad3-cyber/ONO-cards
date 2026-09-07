@@ -30,22 +30,27 @@ export const ExportApkModal: React.FC<ExportApkModalProps> = ({ isOpen, onClose 
     instance_type: mac_mini_m2
     environment:
       node: 20
-      java: 17
+      java: 21
     scripts:
       - name: Install dependencies
         script: |
-          npm install
+          npm install --legacy-peer-deps
+          # Ensure Rollup darwin-arm64 native binary is present on macOS Apple Silicon runner
+          npm install --no-save @rollup/rollup-darwin-arm64 || true
       - name: Build Web App
         script: |
           npm run build
       - name: Sync Web App to Android
         script: |
-          npx cap sync android
+          if [ ! -d "android" ]; then
+            npm run cap:add
+          fi
+          npm run cap:sync
       - name: Build Android APK
         script: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --no-daemon
     artifacts:
       - android/app/build/outputs/apk/**/*.apk
 `;
