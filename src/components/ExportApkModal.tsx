@@ -105,6 +105,36 @@ export const ExportApkModal: React.FC<ExportApkModalProps> = ({ isOpen, onClose 
 
         {/* Content Tabs / Stepper */}
         <div className="p-6 overflow-y-auto space-y-6 text-xs sm:text-sm text-slate-300">
+          {/* Direct Download Banner */}
+          <div className="bg-gradient-to-r from-emerald-950/80 via-slate-900 to-emerald-900/60 p-5 rounded-2xl border border-emerald-500/50 shadow-lg">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span className="text-xs font-black tracking-wider uppercase text-emerald-400">
+                    Build Ready • Release v1.0
+                  </span>
+                </div>
+                <h3 className="text-base font-black text-white flex items-center gap-2">
+                  <Smartphone className="w-5 h-5 text-emerald-400" />
+                  <span>ONO Game Android APK (4.1 MB)</span>
+                </h3>
+                <p className="text-xs text-slate-300">
+                  Application ID: <code className="text-emerald-300">com.onocardgame.app</code> • Built & Signed with Android SDK 36 & Java 21
+                </p>
+              </div>
+
+              <a
+                href="/ono-game.apk"
+                download="ono-game.apk"
+                className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-900/40 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer no-underline whitespace-nowrap"
+              >
+                <Download className="w-5 h-5" />
+                <span>Download APK Now</span>
+              </a>
+            </div>
+          </div>
+
           {/* Quick summary in Urdu/English */}
           <div className="bg-gradient-to-r from-indigo-950/70 via-slate-900 to-purple-950/70 p-4 rounded-2xl border border-indigo-500/30">
             <h3 className="font-bold text-white text-sm flex items-center gap-2 mb-1.5">
