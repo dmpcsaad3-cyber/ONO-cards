@@ -29,10 +29,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: Setup Java JDK 21
@@ -57,30 +57,35 @@ jobs:
 
       - name: Sync Web App to Android
         run: |
-          # Purge any committed or stale Gradle locks and cache files that break Capacitor sync
+          # Purge any committed or stale Gradle locks and cache files
           rm -rf android/.gradle android/build android/app/build
 
-          # Sync or re-initialize Android platform
-          if [ -d "android/app" ]; then
-            echo "Syncing existing Android project..."
-            npx @capacitor/cli sync android || {
-              echo "Capacitor sync encountered an issue. Recreating fresh Android platform..."
-              rm -rf android
-              npx @capacitor/cli add android
-            }
-          else
-            echo "Creating fresh Android platform..."
-            rm -rf android
-            npx @capacitor/cli add android
-          fi
-
-          # Ensure Android SDK path is properly defined
+          # Configure Android SDK path if ANDROID_HOME is set
           if [ -n "$ANDROID_HOME" ]; then
+            mkdir -p android
             echo "sdk.dir=$ANDROID_HOME" > android/local.properties
           fi
 
-          # Ensure gradlew has executable permissions
+          # Ensure gradlew has executable permissions if present
+          if [ -f "android/gradlew" ]; then
+            chmod +x android/gradlew
+          fi
+
+          # Initialize Android platform if not present
+          if [ ! -d "android/app" ]; then
+            echo "Adding Android platform..."
+            ./node_modules/.bin/cap add android
+          fi
+
+          # Sync web assets and plugins to Android native project
+          echo "Syncing web assets and plugins to Android..."
+          ./node_modules/.bin/cap sync android
+
+          # Ensure gradlew is executable and local.properties is configured
           chmod +x android/gradlew
+          if [ -n "$ANDROID_HOME" ]; then
+            echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+          fi
 
       - name: Build Android Debug APK
         run: |
